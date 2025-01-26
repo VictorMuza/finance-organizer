@@ -1,125 +1,341 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Gestão Financeira',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  // ignore: library_private_types_in_public_api
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomePageState extends State<HomePage> {
+  final List<Map<String, dynamic>> _expenses = [];
+  final List<Map<String, dynamic>> _incomes = [];
 
-  void _incrementCounter() {
+  void _addExpense(Map<String, dynamic> expense) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _expenses.add(expense);
+    });
+  }
+
+  void _addIncome(Map<String, dynamic> income) {
+    setState(() {
+      _incomes.add(income);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text('Gestão Financeira'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Home'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.add_circle),
+              title: Text('Inserir Despesa'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddTransactionPage(
+                      onAddTransaction: _addExpense,
+                      title: 'Despesa',
+                      categories: [
+                        'Alimentação',
+                        'Transporte',
+                        'Lazer',
+                        'Educação',
+                        'Saúde',
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.attach_money),
+              title: Text('Inserir Receita'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddTransactionPage(
+                      onAddTransaction: _addIncome,
+                      title: 'Receita',
+                      categories: [
+                        'Salário',
+                        'Investimentos',
+                        'Freelance',
+                        'Prêmios',
+                        'Outros',
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Configurações'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.contact_page),
+              title: Text('Contato'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Sair'),
+              onTap: () {
+                Navigator.pop(context);
+              },
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      body: FinancialDashboard(expenses: _expenses, incomes: _incomes),
+    );
+  }
+}
+
+class FinancialDashboard extends StatelessWidget {
+  final List<Map<String, dynamic>> expenses;
+  final List<Map<String, dynamic>> incomes;
+
+  const FinancialDashboard(
+      {super.key, required this.expenses, required this.incomes});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Últimas Receitas',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 10),
+          Expanded(
+            child: incomes.isEmpty
+                ? Center(
+                    child: Text(
+                      'Nenhuma receita registrada.',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: incomes.length,
+                    itemBuilder: (context, index) {
+                      final income = incomes[index];
+                      return Card(
+                        elevation: 2,
+                        margin: EdgeInsets.symmetric(vertical: 8),
+                        child: ListTile(
+                          leading:
+                              Icon(Icons.attach_money, color: Colors.green),
+                          title: Text(income['description']),
+                          subtitle: Text('Categoria: ${income['category']}'),
+                          trailing: Text(
+                            'R\$ ${income['value'].toStringAsFixed(2)}',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          SizedBox(height: 20),
+          Text(
+            'Últimas Despesas',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 10),
+          Expanded(
+            child: expenses.isEmpty
+                ? Center(
+                    child: Text(
+                      'Nenhuma despesa registrada.',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: expenses.length,
+                    itemBuilder: (context, index) {
+                      final expense = expenses[index];
+                      return Card(
+                        elevation: 2,
+                        margin: EdgeInsets.symmetric(vertical: 8),
+                        child: ListTile(
+                          leading: Icon(Icons.attach_money, color: Colors.red),
+                          title: Text(expense['description']),
+                          subtitle: Text('Categoria: ${expense['category']}'),
+                          trailing: Text(
+                            'R\$ ${expense['value'].toStringAsFixed(2)}',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AddTransactionPage extends StatefulWidget {
+  final Function(Map<String, dynamic>) onAddTransaction;
+  final String title;
+  final List<String> categories;
+
+  const AddTransactionPage({
+    super.key,
+    required this.onAddTransaction,
+    required this.title,
+    required this.categories,
+  });
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _AddTransactionPageState createState() => _AddTransactionPageState();
+}
+
+class _AddTransactionPageState extends State<AddTransactionPage> {
+  final _formKey = GlobalKey<FormState>();
+  String _description = '';
+  double _value = 0.0;
+  String _category = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _category =
+        widget.categories.first; // Definindo a primeira categoria como padrão
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Inserir ${widget.title}'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Descrição'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira uma descrição.';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _description = value!;
+                },
+              ),
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Valor (R\$)'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira um valor.';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Por favor, insira um número válido.';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _value = double.parse(value!);
+                },
+              ),
+              DropdownButtonFormField<String>(
+                value: _category,
+                decoration: InputDecoration(labelText: 'Categoria'),
+                items: widget.categories
+                    .map((category) => DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _category = value!;
+                  });
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    widget.onAddTransaction({
+                      'description': _description,
+                      'value': _value,
+                      'category': _category,
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('Salvar'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
