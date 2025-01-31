@@ -1,81 +1,126 @@
+import 'package:finance_organizer/pages/settings_page.dart';
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-import 'pages/SettingsPage.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Gestão Financeira',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomePage(),
-    );
-  }
-}
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final List<Map<String, dynamic>> _expenses = [];
-  final List<Map<String, dynamic>> _incomes = [];
-
-  void _addTransaction(
-      {required Map<String, dynamic> transaction,
-      required List<Map<String, dynamic>> list}) {
-    setState(() {
-      list.add(transaction);
-    });
-  }
+class AddIncomeScreen extends StatelessWidget {
+  const AddIncomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Gestão Financeira')),
-      drawer: AppDrawer(
-        onAddExpense: () => _navigateToTransactionPage(
-          context,
-          'Despesa',
-          ['Alimentação', 'Transporte', 'Lazer', 'Educação', 'Saúde'],
-          (transaction) =>
-              _addTransaction(transaction: transaction, list: _expenses),
-        ),
-        onAddIncome: () => _navigateToTransactionPage(
-          context,
-          'Receita',
-          ['Salário', 'Investimentos', 'Freelance', 'Prêmios', 'Outros'],
-          (transaction) =>
-              _addTransaction(transaction: transaction, list: _incomes),
-        ),
+      appBar: AppBar(
+        title: Text("Adicionar Receita"),
       ),
-      body: FinancialDashboard(expenses: _expenses, incomes: _incomes),
+      body: Center(
+        child: Text("Tela de Adicionar Receita"),
+      ),
     );
   }
+}
 
-  void _navigateToTransactionPage(
-    BuildContext context,
-    String title,
-    List<String> categories,
-    Function(Map<String, dynamic>) onAddTransaction,
-  ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddTransactionPage(
-          title: title,
-          categories: categories,
-          onAddTransaction: onAddTransaction,
+void main() {
+  runApp(FinanceApp());
+}
+
+class TransactionList extends StatelessWidget {
+  const TransactionList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: 10,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text("Transação $index"),
+          subtitle: Text("Detalhes da transação $index"),
+        );
+      },
+    );
+  }
+}
+
+class FinanceApp extends StatelessWidget {
+  const FinanceApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(primarySwatch: Colors.green),
+      home: MainScreen(),
+    );
+  }
+}
+
+class MainScreen extends StatelessWidget {
+  const MainScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Gestão Financeira"),
+        centerTitle: true,
+      ),
+      drawer: AppDrawer(
+        onAddExpense: () {},
+        onAddIncome: () {},
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BalanceCard(),
+            SizedBox(height: 20),
+            Text("Gráfico de Gastos",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            SizedBox(height: 200, child: ExpenseChart()),
+            SizedBox(height: 20),
+            Text("Transações Recentes",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Expanded(child: TransactionList()),
+          ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            builder: (context) {
+              return Wrap(
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.add_circle, color: Colors.green),
+                    title: Text("Adicionar Receita"),
+                    onTap: () {
+                      Navigator.pop(context); // Fecha o modal
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AddExpenseScreen()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.remove_circle, color: Colors.red),
+                    title: Text("Adicionar Despesa"),
+                    onTap: () {
+                      Navigator.pop(context); // Fecha o modal
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AddIncomeScreen()),
+                      );
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        child: Icon(Icons.add),
       ),
     );
   }
@@ -85,11 +130,8 @@ class AppDrawer extends StatelessWidget {
   final VoidCallback onAddExpense;
   final VoidCallback onAddIncome;
 
-  const AppDrawer({
-    super.key,
-    required this.onAddExpense,
-    required this.onAddIncome,
-  });
+  const AppDrawer(
+      {super.key, required this.onAddExpense, required this.onAddIncome});
 
   @override
   Widget build(BuildContext context) {
@@ -98,190 +140,108 @@ class AppDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           const DrawerHeader(
-            decoration: BoxDecoration(color: Colors.blue),
-            child: Text('Menu',
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
+            child: Text('Gestão Financeira',
                 style: TextStyle(color: Colors.white, fontSize: 24)),
           ),
-          _buildDrawerItem(
-              context, Icons.home, 'Home', () => Navigator.pop(context)),
-          _buildDrawerItem(
-              context, Icons.add_circle, 'Inserir Despesa', onAddExpense),
-          _buildDrawerItem(
-              context, Icons.attach_money, 'Inserir Receita', onAddIncome),
-          _buildDrawerItem(
-            context,
-            Icons.settings,
-            'Configurações',
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SettingsPage()),
-            ),
+          ListTile(
+            title: const Text('Configurações'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+            leading: Icon(Icons.settings),
           ),
-          _buildDrawerItem(context, Icons.contact_page, 'Contato',
-              () => Navigator.pop(context)),
-          _buildDrawerItem(
-              context, Icons.logout, 'Sair', () => Navigator.pop(context)),
         ],
       ),
-    );
-  }
-
-  ListTile _buildDrawerItem(
-      BuildContext context, IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      onTap: onTap,
     );
   }
 }
 
-class FinancialDashboard extends StatelessWidget {
-  final List<Map<String, dynamic>> expenses;
-  final List<Map<String, dynamic>> incomes;
-
-  const FinancialDashboard(
-      {super.key, required this.expenses, required this.incomes});
+class BalanceCard extends StatelessWidget {
+  const BalanceCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTransactionSection('Últimas Receitas', incomes, Colors.green),
-          const SizedBox(height: 20),
-          _buildTransactionSection('Últimas Despesas', expenses, Colors.red),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTransactionSection(
-      String title, List<Map<String, dynamic>> transactions, Color iconColor) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style:
-                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
-          transactions.isEmpty
-              ? Center(
-                  child: Text('Nenhuma $title registrada.',
-                      style: const TextStyle(fontSize: 16)),
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: transactions.length,
-                  itemBuilder: (context, index) {
-                    final transaction = transactions[index];
-                    return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        leading: Icon(Icons.attach_money, color: iconColor),
-                        title: Text(transaction['description']),
-                        subtitle: Text('Categoria: ${transaction['category']}'),
-                        trailing: Text(
-                          'R\$ ${transaction['value'].toStringAsFixed(2)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    );
-                  },
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Saldo Atual",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            Text("R\$ 5.000,00",
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green)),
+            Divider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Entradas", style: TextStyle(color: Colors.green)),
+                    Text("R\$ 7.500,00",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                  ],
                 ),
-        ],
-      ),
-    );
-  }
-}
-
-class AddTransactionPage extends StatefulWidget {
-  final Function(Map<String, dynamic>) onAddTransaction;
-  final String title;
-  final List<String> categories;
-
-  const AddTransactionPage({
-    super.key,
-    required this.onAddTransaction,
-    required this.title,
-    required this.categories,
-  });
-
-  @override
-  State<AddTransactionPage> createState() => _AddTransactionPageState();
-}
-
-class _AddTransactionPageState extends State<AddTransactionPage> {
-  final _formKey = GlobalKey<FormState>();
-  late String _description;
-  late double _value;
-  late String _category;
-
-  @override
-  void initState() {
-    super.initState();
-    _category = widget.categories.first;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Inserir ${widget.title}')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              _buildTextInput('Descrição', (value) => _description = value),
-              _buildTextInput(
-                  'Valor (R\$)', (value) => _value = double.parse(value),
-                  keyboardType: TextInputType.number),
-              DropdownButtonFormField<String>(
-                value: _category,
-                decoration: const InputDecoration(labelText: 'Categoria'),
-                items: widget.categories.map((category) {
-                  return DropdownMenuItem(
-                      value: category, child: Text(category));
-                }).toList(),
-                onChanged: (value) => setState(() => _category = value!),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submitForm,
-                child: const Text('Salvar'),
-              ),
-            ],
-          ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Saídas", style: TextStyle(color: Colors.red)),
+                    Text("R\$ 2.500,00",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildTextInput(String label, Function(String) onSaved,
-      {TextInputType? keyboardType}) {
-    return TextFormField(
-      decoration: InputDecoration(labelText: label),
-      keyboardType: keyboardType,
-      validator: (value) =>
-          value == null || value.isEmpty ? 'Por favor, insira $label.' : null,
-      onSaved: (value) => onSaved(value!),
+class ExpenseChart extends StatelessWidget {
+  const ExpenseChart({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PieChart(
+      PieChartData(
+        sections: [
+          PieChartSectionData(value: 40, title: "Moradia", color: Colors.blue),
+          PieChartSectionData(
+              value: 30, title: "Alimentação", color: Colors.green),
+          PieChartSectionData(
+              value: 15, title: "Transporte", color: Colors.orange),
+          PieChartSectionData(value: 15, title: "Outros", color: Colors.red),
+        ],
+      ),
     );
   }
+}
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      widget.onAddTransaction({
-        'description': _description,
-        'value': _value,
-        'category': _category
-      });
-      Navigator.pop(context);
-    }
+class AddExpenseScreen extends StatelessWidget {
+  const AddExpenseScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Adicionar Despesa")),
+      body: Center(child: Text("Tela para adicionar uma despesa")),
+    );
   }
 }
